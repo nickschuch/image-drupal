@@ -5,6 +5,9 @@ on:
     branches:
       - 'main'
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -17,7 +20,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -35,7 +38,7 @@ jobs:
         with:
           context: ./nginx
           push: true
-          tags: ${{ github.repository }}:php-fpm-main
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}:php-fpm-main
           platforms: linux/amd64,linux/arm64
 
       - name: Build and Push PHP-FPM
@@ -43,5 +46,5 @@ jobs:
         with:
           context: ./php-fpm
           push: true
-          tags: ${{ github.repository }}:php-fpm-main
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}:php-fpm-main
           platforms: linux/amd64,linux/arm64
