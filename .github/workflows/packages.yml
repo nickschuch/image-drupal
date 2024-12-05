@@ -5,10 +5,6 @@ on:
     branches:
       - 'main'
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -21,7 +17,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -34,17 +30,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Build and push Docker image
+      - name: Build and Push Nginx
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./nginx
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ github.repository }}:php-fpm-main
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and Push PHP-FPM
+        uses: docker/build-push-action@v5
+        with:
+          context: ./php-fpm
+          push: true
+          tags: ${{ github.repository }}:php-fpm-main
           platforms: linux/amd64,linux/arm64
